@@ -2,6 +2,7 @@ import numpy as np
 import pytesseract
 import cv2
 import os 
+import re
 cwd = os.getcwd()
 
 
@@ -10,10 +11,15 @@ class Receipt:
         im_name: name of image
         image: Actual image"""
     def __init__(self,image,folder:str = 'receipt_pics'):
-        self.path = cwd + '\\' +folder +'\\'+ image
+        self.cwd = os.getcwd() 
+
+        self.path = self.cwd + '\\' +folder +'\\'+ image
         self.im_name = image
         self.image = cv2.imread(self.path)
-    
+        
+        self.text = (pytesseract.image_to_string(self.image)).lower()
+        
+
     '''clears all files in dir list (the junk files).'''
     def wipe(self,directories:list = ['gray','blur','thresholded','dilated','ROI_files','contoured']):
         for directory in directories:
