@@ -49,14 +49,15 @@ def main():
         syns = []
         
         for syn in wordnet.synsets(synonym):
-            # print([word.name() for word in syn.lemmas()])
-            test1 = [quick_translate(word2) for word2 in [word1.name() for word1 in syn.lemmas()]]
-            syns=[word1.name() for word1 in syn.lemmas()]+test1
-            # test = np.array(map(translator.translate(lem.name(), dest = 'nl').text,l))
             
-            print(test1)
-
-       
+            test1 = [quick_translate(word2) for word2 in [word1.name() for word1 in syn.lemmas()]]
+            if test1 == [word1.name() for word1 in syn.lemmas()]:
+                syns+=test1
+            else:
+                syns=[word1.name() for word1 in syn.lemmas()]+test1
+           
+            
+            
         additional = []
         stores = []
         if synonym =='entertainment':
@@ -70,7 +71,8 @@ def main():
             stores = ['Albert Heijn','Albert', 'Heijn','Jumbo']
         
         #MUST BE EXPANDED LATER
-        additional_nl = [translator.translate(word) for word in additional]
+        additional_nl = [quick_translate(word) for word in additional]
+        print(syns + additional_nl + stores +additional)
         return syns + additional_nl + stores +additional
     
     def csv_maker(category,row):
@@ -83,24 +85,26 @@ def main():
 
     done = False
     for w in potentials:
+        total_set = syn_setmaker(w)
         for x in filtered:
             
-            if x in syn_setmaker(w):
+            if x in total_set:
+                
                 done = True
                 break
         if done ==True:
-            receipt_type = w     
+            receipt_type = w  
+            csv_maker(receipt_type,[receipt_type,store_name,price])   
             break
     if done == False:
         receipt_type = 'other'
-
-    csv_maker(receipt_type,[receipt_type,store_name,price])
+        csv_maker(receipt_type,[receipt_type,store_name,price])
     #Not sure if this will work, but if it does that'd be pretty cool
-    for y in potentials:
+    # for y in potentials:
 
-        exec("%s = %d" % (y, pd.read_csv(y+'.csv')))
-        # y['Date']=pd.to_datetime(y.Date)
-        y.head()
+    #     exec("%s = %d" % (y, pd.read_csv(y+'.csv')))
+    #     # y['Date']=pd.to_datetime(y.Date)
+    #     y.head()
 
     # word_tokenized = word_tokenize(sent_tokens)
     
