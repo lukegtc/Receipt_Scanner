@@ -2,6 +2,7 @@ import numpy as np
 import pytesseract
 import cv2
 import os 
+import sys
 from PIL import Image
 import argparse
 import pandas as pd
@@ -14,9 +15,11 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import wordnet
 from OCR_Processing import Receipt
 import itertools
+import functools
 from googletrans import Translator
+
 def main():
-    translator = Translator()
+    translator = Translator(service_urls=['translate.googleapis.com'])
     nltk.download('punkt',quiet=True)
     nltk.download('wordnet',quiet = True)
     test_pic = Receipt('irl_pic.jpg')
@@ -36,21 +39,31 @@ def main():
     filtered = [w for w in sent_tokens if w not in bad_items]
 
 
+    #English to Dutch
+    def quick_translate(word):
+        return translator.translate(word, dest = 'nl').text
+
+
     potentials = ['entertainment','home','grocery']
     def syn_setmaker(synonym):
         syns = []
+        
         for syn in wordnet.synsets(synonym):
-            for lem in syn.lemmas():
-                print(lem.name())
-#-----------------#IT'S BROKEN HERE------------------------------
-                syns.append(translator.translate(lem.name()))#, src = 'nl')) IT'S BROKEN HERE
+            # print([word.name() for word in syn.lemmas()])
+            test1 = [quick_translate(word2) for word2 in [word1.name() for word1 in syn.lemmas()]]
+            syns=[word1.name() for word1 in syn.lemmas()]+test1
+            # test = np.array(map(translator.translate(lem.name(), dest = 'nl').text,l))
+            
+            print(test1)
+
+       
         additional = []
         stores = []
         if synonym =='entertainment':
             additional = ['fun','restaurant','movie','cinema','park','hotel','room','meal','dinner']
             stores = ['Pathé', 'Best Western', 'IMAX', 'bar', 'pub' ]
         if synonym == "home":
-            additional = ['intnernet','telephone','electricity','meter','wifi','consumer','reading','gas','water']
+            additional = ['internet','telephone','electricity','meter','wifi','consumer','reading','gas','water']
 
         if synonym == 'grocery':
             additional = ['milk','sugar','flour','soda','bread']
@@ -58,24 +71,20 @@ def main():
         
         #MUST BE EXPANDED LATER
         additional_nl = [translator.translate(word) for word in additional]
-        return syns + additional_nl + stores
+        return syns + additional_nl + stores +additional
     
     def csv_maker(category,row):
         
-        print(str(category) + 'category')
+        print(str(category) + ' category')
         filename = '{}.csv'.format(category)
         with open(filename, 'a+',newline='') as write_obj:
             csv_writer = csv.writer(write_obj)
             csv_writer.writerow(row)
 
-
-
-
-
-
     done = False
     for w in potentials:
         for x in filtered:
+            
             if x in syn_setmaker(w):
                 done = True
                 break
@@ -88,12 +97,13 @@ def main():
     csv_maker(receipt_type,[receipt_type,store_name,price])
     #Not sure if this will work, but if it does that'd be pretty cool
     for y in potentials:
+
         exec("%s = %d" % (y, pd.read_csv(y+'.csv')))
-        y['Date']=pd.to_datetime(y.Date)
+        # y['Date']=pd.to_datetime(y.Date)
         y.head()
 
     # word_tokenized = word_tokenize(sent_tokens)
-
+    
 
 
 
