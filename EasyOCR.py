@@ -22,7 +22,7 @@ def main():
     translator = Translator(service_urls=['translate.googleapis.com'])
     nltk.download('punkt',quiet=True)
     nltk.download('wordnet',quiet = True)
-    test_pic = Receipt('irl_pic.jpg')
+    test_pic = Receipt('ahreceipt.jpg')
     
     #date functionality needs to be fixed
     # matches = re.findall(r'\d+[/.-]\d+[\.-]\d+',test_pic.text)
@@ -30,10 +30,12 @@ def main():
     # date = st.join(matches)
     sent_tokens = nltk.sent_tokenize(test_pic.text)
     sent_tokens = list(itertools.chain(*[new_item.split('\n') for new_item in sent_tokens]))
-    # print(sent_tokens)
-    store_name = sent_tokens[0][0]
-    price_str = [price[8:] for price in sent_tokens if ('totaal: ' in price)]
-    price = price_str[0][:-4] 
+    #TODO:
+    #Fix this hardcoded store-name thing
+    #This is hardcoded FIX
+    store_name = sent_tokens[0]
+    price_str = [price for price in sent_tokens if ('totaal: ' or 'totaal' in price)]
+    price = [total for total in price_str if ('totaal' in total)] #price_str[0][:-4] 
     bad_items = ['', ' ']
     date = 0
     filtered = [w for w in sent_tokens if w not in bad_items]
@@ -71,9 +73,9 @@ def main():
             stores = ['Albert Heijn','Albert', 'Heijn','Jumbo']
         
         #MUST BE EXPANDED LATER
-        additional_nl = [quick_translate(word) for word in additional]
-        print(syns + additional_nl + stores +additional)
-        return syns + additional_nl + stores +additional
+        additional_nl = [quick_translate(word).lower() for word in additional]
+        # print(syns + additional_nl + stores +additional)
+        return [syn.lower() for syn in syns] + additional_nl + [store.lower() for store in stores] +[add.lower() for add in additional]
     
     def csv_maker(category,row):
         
@@ -84,12 +86,13 @@ def main():
             csv_writer.writerow(row)
 
     done = False
+    # print(potentials)
     for w in potentials:
         total_set = syn_setmaker(w)
         for x in filtered:
             
             if x in total_set:
-                
+                print(x)
                 done = True
                 break
         if done ==True:
