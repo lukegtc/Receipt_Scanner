@@ -34,10 +34,20 @@ def main():
     #Fix this hardcoded store-name thing
     #This is hardcoded FIX
     store_name = sent_tokens[0]
+    
     price_str = [price for price in sent_tokens if ('totaal: ' or 'totaal' in price)]
-    price = [total for total in price_str if ('totaal' in total)] #price_str[0][:-4] 
+    price_new = [total for total in price_str if ('totaal' in total)] #price_str[0][:-4] 
+
+    #This is probably the quckest way to do this but this can definitely be done better
+    for item in price_new:
+        if item[-3] == ',' or item[-3] == '.':
+            final_price = item[item.index(' ')+1:]
+            print(final_price)
+            #pulls numbers out of a string
+            
+
     bad_items = ['', ' ']
-    date = 0
+    #Total set of words that will help sort the receipt
     filtered = [w for w in sent_tokens if w not in bad_items]
 
 
@@ -92,16 +102,16 @@ def main():
         for x in filtered:
             
             if x in total_set:
-                print(x)
+                
                 done = True
                 break
         if done ==True:
             receipt_type = w  
-            csv_maker(receipt_type,[receipt_type,store_name,price])   
+            csv_maker(receipt_type,[receipt_type,store_name,price_new])   
             break
     if done == False:
         receipt_type = 'other'
-        csv_maker(receipt_type,[receipt_type,store_name,price])
+        csv_maker(receipt_type,[receipt_type,store_name,price_new])
     #Not sure if this will work, but if it does that'd be pretty cool
     # for y in potentials:
 
