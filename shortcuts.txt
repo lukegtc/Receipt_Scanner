@@ -1,5 +1,0 @@
-ctrl-P opens the command palette
-ctrl-F is used to find things duh
-@ symbol in the command palette is used to find anything in the file
-ctrl-shift-. makes finding things easy too
-alt+click allows you to select multiple lines and edit them simultaneously
